@@ -63,7 +63,7 @@ func (l *Lexer) NextToken() token.Token {
 	case '}':
 		t = newToken(token.RIGHT_BRACE, l.ch)
 
-	// default case
+	// end of the file
 	case 0:
 		t.Literal = ""
 		t.Type = token.EOF
