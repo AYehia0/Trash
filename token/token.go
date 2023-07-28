@@ -39,3 +39,16 @@ type Token struct {
 	Type    TokenType
 	Literal string
 }
+
+// seperating user-defined identifiers from langauge keywords
+var keywords = map[string]TokenType{
+	"fn":  FUNC,
+	"let": LET,
+}
+
+func LookIdentifier(ident string) TokenType {
+	if tok, ok := keywords[ident]; ok {
+		return tok
+	}
+	return IDENT // default for all user-defined
+}

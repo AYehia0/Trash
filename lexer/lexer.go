@@ -1,6 +1,8 @@
 package lexer
 
-import "trash/token"
+import (
+	"trash/token"
+)
 
 type Lexer struct {
 	input        string
@@ -27,6 +29,51 @@ func (l *Lexer) readChar() {
 	l.nextPosition++
 }
 
+// check if the character is a word
+// SUPPORT : ASCII only for now
+func isLetter(ch byte) bool {
+	if 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' {
+		return true
+	}
+	return false
+}
+
+// check if the character is a digit
+func isDigit(ch byte) bool {
+	if '0' <= ch && ch <= '9' {
+		return true
+	}
+	return false
+}
+
+func (l *Lexer) readInt() string {
+	startPos := l.position
+	for isDigit(l.ch) {
+		l.readChar()
+	}
+	return l.input[startPos:l.position]
+}
+
+// read a complete word until the end, and update the position & nextPosition
+// SUPPORT : ASCII only for now
+func (l *Lexer) readIdentifer() string {
+
+	// read until you find a " "
+	startPos := l.position
+	// can read letters with digits inside i think
+	for isLetter(l.ch) || isDigit(l.ch) {
+		l.readChar()
+	}
+	return l.input[startPos:l.position]
+}
+
+// skip tabs, whitespaces, ... etc
+func (l *Lexer) skipSpaces() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readChar()
+	}
+}
+
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{
 		Type:    tokenType,
@@ -36,6 +83,9 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 
 func (l *Lexer) NextToken() token.Token {
 	var t token.Token
+
+	// skip spaces
+	l.skipSpaces()
 
 	switch l.ch {
 	// operators
@@ -67,6 +117,21 @@ func (l *Lexer) NextToken() token.Token {
 	case 0:
 		t.Literal = ""
 		t.Type = token.EOF
+
+	// the default case is either: identifier, keyword, number or illeal
+	default:
+		// check i
+		if isLetter(l.ch) {
+			t.Literal = l.readIdentifer()
+			t.Type = token.LookIdentifier(t.Literal)
+			return t
+		} else if isDigit(l.ch) {
+			t.Literal = l.readInt()
+			t.Type = token.INT
+			return t
+		} else {
+			t = newToken(token.ILLEGAL, l.ch)
+		}
 	}
 
 	// advance to the next character
