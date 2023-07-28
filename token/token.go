@@ -5,38 +5,37 @@ package token
 
 // using a constant since our language is going to really limited and small, while it's better to use a hashmap
 const (
-  // identifiers: let IDENTIFER = 4;
-  IDENT = "IDENT" // add, foobar, x, y
-  INT = "INT" // for numbers, only supports integers for now
+	// identifiers: let IDENTIFER = 4;
+	IDENT = "IDENT" // add, foobar, x, y
+	INT   = "INT"   // for numbers, only supports integers for now
 
-  // operators: +, *, /, -
-  ASSIGN = "="
-  PLUS = "+"
-  NEG = "-"
-  MUL = "*"
-  DIV = "/"
+	// operators: +, *, /, -
+	ASSIGN = "="
+	PLUS   = "+"
+	NEG    = "-"
+	MUL    = "*"
+	DIV    = "/"
 
-  // delimiters: (, ), {, }, ;, ,
-  SIMICOLON = ";"
-  COMMA = ","
-  LEFT_PAREN = "("
-  RIGHT_PAREN = ")"
-  LEFT_BRACE = "{"
-  RIGHT_BRACE = "}"
+	// delimiters: (, ), {, }, ;, ,
+	SEMICOLON   = ";"
+	COMMA       = ","
+	LEFT_PAREN  = "("
+	RIGHT_PAREN = ")"
+	LEFT_BRACE  = "{"
+	RIGHT_BRACE = "}"
 
-  // keywords
-  FUNC = "FUNCTION"
-  LET = "LET"
+	// keywords
+	FUNC = "FUNCTION"
+	LET  = "LET"
 
-  // special types
-  ILLEGAL = "ILLEGAL"
-  EOF = "EOF"
-
+	// special types
+	ILLEGAL = "ILLEGAL"
+	EOF     = "EOF"
 )
 
 type TokenType string
 
 type Token struct {
-  Type TokenType
-  Literal string
+	Type    TokenType
+	Literal string
 }
