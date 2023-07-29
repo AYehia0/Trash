@@ -99,6 +99,12 @@ func (l *Lexer) NextToken() token.Token {
 		t = newToken(token.MUL, l.ch)
 	case '/':
 		t = newToken(token.DIV, l.ch)
+	case '!':
+		t = newToken(token.BANG, l.ch)
+	case '>':
+		t = newToken(token.GT, l.ch)
+	case '<':
+		t = newToken(token.LT, l.ch)
 	// delimiters
 	case ';':
 		t = newToken(token.SEMICOLON, l.ch)

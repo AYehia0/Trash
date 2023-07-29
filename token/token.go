@@ -15,6 +15,9 @@ const (
 	NEG    = "-"
 	MUL    = "*"
 	DIV    = "/"
+	BANG   = "!"
+	LT     = "<"
+	GT     = ">"
 
 	// delimiters: (, ), {, }, ;, ,
 	SEMICOLON   = ";"
@@ -25,8 +28,13 @@ const (
 	RIGHT_BRACE = "}"
 
 	// keywords
-	FUNC = "FUNCTION"
-	LET  = "LET"
+	FUNC   = "FUNCTION"
+	LET    = "LET"
+	IF     = "IF"
+	ELSE   = "ELSE"
+	RETURN = "RETURN"
+	TRUE   = "TRUE"
+	FALSE  = "FALSE"
 
 	// special types
 	ILLEGAL = "ILLEGAL"
@@ -42,8 +50,13 @@ type Token struct {
 
 // seperating user-defined identifiers from langauge keywords
 var keywords = map[string]TokenType{
-	"fn":  FUNC,
-	"let": LET,
+	"fn":     FUNC,
+	"let":    LET,
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
+	"true":   TRUE,
+	"false":  FALSE,
 }
 
 func LookIdentifier(ident string) TokenType {
