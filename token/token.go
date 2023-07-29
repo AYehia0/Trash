@@ -10,14 +10,16 @@ const (
 	INT   = "INT"   // for numbers, only supports integers for now
 
 	// operators: +, *, /, -
-	ASSIGN = "="
-	PLUS   = "+"
-	NEG    = "-"
-	MUL    = "*"
-	DIV    = "/"
-	BANG   = "!"
-	LT     = "<"
-	GT     = ">"
+	ASSIGN    = "="
+	PLUS      = "+"
+	NEG       = "-"
+	MUL       = "*"
+	DIV       = "/"
+	BANG      = "!"
+	LT        = "<"
+	GT        = ">"
+	EQUAL     = "=="
+	NOT_EQUAL = "!="
 
 	// delimiters: (, ), {, }, ;, ,
 	SEMICOLON   = ";"

@@ -20,6 +20,7 @@ func TestNextToken(t *testing.T) {
 		} else {
 			return false;
 		}
+		!= ==
 	`
 	expectedTests := []struct {
 		expectedType    token.TokenType
@@ -92,6 +93,9 @@ func TestNextToken(t *testing.T) {
 		{token.FALSE, "false"},
 		{token.SEMICOLON, ";"},
 		{token.RIGHT_BRACE, "}"},
+
+		{token.NOT_EQUAL, "!="},
+		{token.EQUAL, "=="},
 
 		{token.EOF, ""},
 	}

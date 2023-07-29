@@ -54,6 +54,13 @@ func (l *Lexer) readInt() string {
 	return l.input[startPos:l.position]
 }
 
+func (l *Lexer) readAhead() byte {
+	if l.nextPosition > len(l.input) {
+		return 0
+	}
+	return l.input[l.nextPosition]
+}
+
 // read a complete word until the end, and update the position & nextPosition
 // SUPPORT : ASCII only for now
 func (l *Lexer) readIdentifer() string {
@@ -89,8 +96,29 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.ch {
 	// operators
+	// TODO: refactor these branches
 	case '=':
-		t = newToken(token.ASSIGN, l.ch)
+		if l.readAhead() == '=' {
+			ch := l.ch
+			l.readChar()
+			t = token.Token{
+				Type:    token.EQUAL,
+				Literal: string(ch) + string(l.ch),
+			}
+		} else {
+			t = newToken(token.ASSIGN, l.ch)
+		}
+	case '!':
+		if l.readAhead() == '=' {
+			ch := l.ch
+			l.readChar()
+			t = token.Token{
+				Type:    token.NOT_EQUAL,
+				Literal: string(ch) + string(l.ch),
+			}
+		} else {
+			t = newToken(token.BANG, l.ch)
+		}
 	case '+':
 		t = newToken(token.PLUS, l.ch)
 	case '-':
@@ -99,8 +127,6 @@ func (l *Lexer) NextToken() token.Token {
 		t = newToken(token.MUL, l.ch)
 	case '/':
 		t = newToken(token.DIV, l.ch)
-	case '!':
-		t = newToken(token.BANG, l.ch)
 	case '>':
 		t = newToken(token.GT, l.ch)
 	case '<':
