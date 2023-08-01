@@ -33,3 +33,23 @@ the code called abstract syntax tree and then evaluate this tree. It will have a
 - the Abstract Syntax Tree (AST)
 - the internal object system
 - the evaluator
+### Lexer 
+### Parser 
+#### Parsing let statements
+
+Expressions produce values, statements don’t. `let x = 5` doesn’t produce a value,
+whereas 5 does (the value it produces is 5). A return 5; statement doesn’t produce a value,
+but add(5, 5) does. This distinction - expressions produce values, statements don’t - changes
+depending on who you ask, but it’s good enough for our needs
+
+Here's a fully valid let example:
+
+```javascript
+    let x = 10;
+    let y = 15;
+    let add = fn(a, b) {
+    return a + b;
+    };
+```
+
+```let <identifier> = <expression>;```
