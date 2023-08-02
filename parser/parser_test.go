@@ -8,10 +8,10 @@ import (
 
 func TestLetStatements(t *testing.T) {
 	input := `
-	let  = 5;
+	let x = 5;
 	let y = 8;
-	let foobar  29393;
-	let   x + y;
+	let foobar = 29393;
+	let foobar = x + y;
 	`
 	l := lexer.New(input)
 	p := New(l)
