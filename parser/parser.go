@@ -91,7 +91,8 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	// stmt.Value = ast.Expression{
 	//
 	// }
-	if p.currToken.Type != token.SEMICOLON {
+	// parse to the end
+	for !p.TokenIs(p.currToken, token.SEMICOLON) {
 		p.nextToken()
 	}
 	return stmt
