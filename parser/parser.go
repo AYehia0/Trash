@@ -1,3 +1,10 @@
+/*
+A Pratt parser’s main idea is the association of parsing functions (which Pratt calls “semantic
+code”) with token types. Whenever this token type is encountered, the parsing functions are
+called to parse the appropriate expression and return an AST node that represents it. Each
+token type can have up to two parsing functions associated with it, depending on whether the
+token is found in a prefx or an infx position.
+*/
 package parser
 
 import (
@@ -7,11 +14,37 @@ import (
 	"trash/token"
 )
 
+type (
+	prefixParseFn func() ast.Expression               // --x
+	infixParseFn  func(ast.Expression) ast.Expression // 6 * 9 (left side that's being parsed)
+)
+
+// precedences of the parser
+/*
+What we want out of these constants is to later be able to answer:
+- Does the * operator have a higher precedence than the == operator?
+- Does a prefx operator have a higher preference than a call expression?
+*/
+const (
+	_ int = iota
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // < >
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -x or !x
+	CALL        // myfunc(x)
+)
+
 type Parser struct {
 	l         *lexer.Lexer
 	currToken token.Token
 	peekToken token.Token
 	errors    []string
+
+	// check if the appropriate map (infx or prefx) has a parsing function associated with currToken.Type
+	prefixParseFns map[token.TokenType]prefixParseFn
+	infixParseFns  map[token.TokenType]infixParseFn
 }
 
 func New(lexer *lexer.Lexer) *Parser {
@@ -19,11 +52,22 @@ func New(lexer *lexer.Lexer) *Parser {
 		l:      lexer,
 		errors: []string{},
 	}
+	// associate tokens to the parser
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
+
 	// read 2 tokens so current and next token are set
 	p.nextToken()
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
 }
 
 func (p *Parser) Errors() []string {
@@ -65,7 +109,27 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
+		return p.parseExpressionStatement()
+	}
+}
+
+// check if we have a parsing function associated to the current token, if yes call it (parse it according to its type)
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.currToken.Type]
+
+	if prefix == nil {
 		return nil
+	}
+	// parse the prefix
+	leftExp := prefix()
+
+	return leftExp
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{
+		Token: p.currToken,
+		Value: p.currToken.Literal,
 	}
 }
 
@@ -121,6 +185,18 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	// TODO: finish the expression, for now skip till you find a semicolon
 	if !p.TokenIs(p.currToken, token.SEMICOLON) {
+		p.nextToken()
+	}
+	return stmt
+}
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{
+		Token: p.currToken,
+	}
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	// optional semicolons
+	if p.TokenIs(p.peekToken, token.SEMICOLON) {
 		p.nextToken()
 	}
 	return stmt

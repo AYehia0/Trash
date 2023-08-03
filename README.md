@@ -52,4 +52,69 @@ Here's a fully valid let example:
     };
 ```
 
-```let <identifier> = <expression>;```
+#### Parsing return statements
+
+```javascript
+    return 5;
+    return 10;
+    return add(15);
+```
+Experienced with let statements, we can easily spot the structure behind these statements:
+return <expression>;
+
+Return statements consist solely of the keyword return and an expression. That makes the
+defnition of `ast.ReturnStatement` really simple.
+
+#### Parsing Expressions
+
+- [ ] Expressions involving prefx operators:
+```
+    -5
+    !true
+    !false
+```
+- [ ] And of course it has infx operators (or “binary operators”):
+```
+    5 + 5
+    5 - 5
+    5 / 5
+    5 * 5
+```
+- [ ] Besides these basic arithmetic operators, there are also the following comparison operators:
+```
+    foo == bar
+    foo != bar
+    foo < bar
+    foo > bar
+```
+- [ ] And of course, we can use parentheses to group expressions and inﬂuence the order of evaluation:
+```
+    5 * (5 + 5)
+    ((5 + 5) * 5) * 5
+```
+- [ ] Then there are call expressions:
+```
+    add(2, 3)
+    add(add(2, 3), add(5, 10))
+    max(5, add(5, (5 * 5)))
+```
+- [ ] Identifers are expressions too:
+```
+    foo * bar / foobar
+    add(foo, bar)
+```
+- [ ] Function literals are expressions too. We can use a let statement to bind a function to a name. The function literal is just the expression in the statement:
+```
+    let add = fn(x, y) { return x + y };
+```
+- [ ] And here we use a function literal in place of an identifer:
+
+```
+fn(x, y) { return x + y }(5, 5)
+(fn(x) { return x }(5) + 10 ) * 10
+```
+- [ ] In contrast to a lot of widely used programming languages we also have “if expressions”:
+```
+let result = if (10 > 5) { true } else { false };
+result // => true
+```
