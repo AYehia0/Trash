@@ -371,3 +371,34 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		}
 	}
 }
+
+func TestBooleanExpression(t *testing.T) {
+	input := `
+		true;
+		false;
+	`
+
+	expected := []string{"true", "false"}
+	l := lexer.New(input)
+	p := New(l)
+	program := p.Parse()
+
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 2 {
+		t.Fatalf("Expected Program to have 2 statement, got=%d", len(program.Statements))
+	}
+
+	for i, stmt := range program.Statements {
+		stmtExp := stmt.(*ast.ExpressionStatement)
+		boolStmt, ok := stmtExp.Expression.(*ast.Boolean)
+		if !ok {
+			t.Errorf("stmt not *ast.Boolean got=%T", stmt)
+			continue
+		}
+		if boolStmt.TokenLiteral() != expected[i] {
+			t.Errorf("boolStmt.TokenLiteral not 'true or false', got %q",
+				boolStmt.TokenLiteral())
+		}
+	}
+}
