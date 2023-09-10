@@ -85,6 +85,10 @@ func New(lexer *lexer.Lexer) *Parser {
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
 
+	// grouped
+	// we only need to parse the left pren !!!
+	p.registerPrefix(token.LEFT_PAREN, p.parseGroupedExpression)
+
 	// read 2 tokens so current and next token are set
 	p.nextToken()
 	p.nextToken()
@@ -309,4 +313,14 @@ func (p *Parser) parseBooleanExpression() ast.Expression {
 		Token: p.currToken,
 		Value: p.TokenIs(p.currToken, token.TRUE), // return true or false
 	}
+}
+func (p *Parser) parseGroupedExpression() ast.Expression {
+	p.nextToken()
+
+	exp := p.parseExpression(LOWEST)
+
+	if !p.expectNextToken(token.RIGHT_PAREN) {
+		return nil
+	}
+	return exp
 }
