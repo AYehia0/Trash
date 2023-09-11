@@ -38,14 +38,15 @@ const (
 )
 
 var precedences = map[token.TokenType]int{
-	token.MUL:       PRODUCT,
-	token.DIV:       PRODUCT,
-	token.EQUAL:     EQUALS,
-	token.NOT_EQUAL: EQUALS,
-	token.GT:        LESSGREATER,
-	token.LT:        LESSGREATER,
-	token.PLUS:      SUM,
-	token.NEG:       SUM,
+	token.MUL:        PRODUCT,
+	token.DIV:        PRODUCT,
+	token.EQUAL:      EQUALS,
+	token.NOT_EQUAL:  EQUALS,
+	token.GT:         LESSGREATER,
+	token.LT:         LESSGREATER,
+	token.PLUS:       SUM,
+	token.NEG:        SUM,
+	token.LEFT_PAREN: CALL,
 }
 
 type Parser struct {
@@ -84,6 +85,7 @@ func New(lexer *lexer.Lexer) *Parser {
 	p.registerInfix(token.NOT_EQUAL, p.parseInfixExpression)
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
+	p.registerInfix(token.LEFT_PAREN, p.parseCallExpression) // special one
 
 	// grouped
 	// we only need to parse the left pren !!!
@@ -439,4 +441,37 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 	lit.Body = p.parseBlockStatement()
 
 	return lit
+}
+
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	exp := &ast.CallExpression{
+		Token:    p.currToken,
+		Function: function,
+	}
+
+	exp.Arguments = p.parseCallArguments()
+	return exp
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	args := []ast.Expression{}
+
+	if p.TokenIs(p.peekToken, token.RIGHT_PAREN) {
+		p.nextToken()
+		return args
+	}
+
+	p.nextToken()
+	args = append(args, p.parseExpression(LOWEST))
+
+	for p.TokenIs(p.peekToken, token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		args = append(args, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectNextToken(token.RIGHT_PAREN) {
+		return nil
+	}
+	return args
 }
