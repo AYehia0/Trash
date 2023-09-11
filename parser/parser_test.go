@@ -8,42 +8,35 @@ import (
 )
 
 func TestLetStatements(t *testing.T) {
-	input := `
-	let x = 5;
-	let y = 8;
-	let foobar = 29393;
-	let foobar = x + y;
-	`
-	l := lexer.New(input)
-	p := New(l)
-
-	ast := p.Parse()
-	checkParserErrors(t, p)
-	if ast == nil {
-		t.Fatalf("Parse() returned an error;")
-	}
-
 	tests := []struct {
-		expectedIndentifier string
+		input              string
+		expectedIdentifier string
+		expectedValue      interface{}
 	}{
-		{"x"},
-		{"y"},
-		{"foobar"},
-		{"foobar"},
+		{"let x = 5;", "x", 5},
+		{"let y = true;", "y", true},
+		{"let foobar = y;", "foobar", "y"},
 	}
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.Parse()
+		checkParserErrors(t, p)
 
-	if len(ast.Statements) < 3 {
-		t.Fatalf("Expected to have length of %d, got %d", len(tests), len(ast.Statements))
-	}
-
-	for i, tt := range tests {
-		stmt := ast.Statements[i]
-		if !testLetStatement(t, stmt, tt.expectedIndentifier) {
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statements. got=%d",
+				len(program.Statements))
+		}
+		stmt := program.Statements[0]
+		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
+			return
+		}
+		val := stmt.(*ast.LetStatement).Value
+		if !testLiteralExpression(t, val, tt.expectedValue) {
 			return
 		}
 	}
 }
-
 func testLetStatement(t *testing.T, stat ast.Statement, name string) bool {
 	// checking the token literal
 	if stat.TokenLiteral() != "let" {
