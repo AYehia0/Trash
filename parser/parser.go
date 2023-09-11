@@ -91,6 +91,7 @@ func New(lexer *lexer.Lexer) *Parser {
 
 	// other keywords if, else... etc
 	p.registerPrefix(token.IF, p.parseIfExpression)
+	p.registerPrefix(token.FUNC, p.parseFunctionLiteral)
 
 	// read 2 tokens so current and next token are set
 	p.nextToken()
@@ -362,7 +363,6 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	return exp
 }
 
-// TODO: implement the block statement here
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	block := ast.BlockStatement{
 		Token: p.currToken,
@@ -382,4 +382,61 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	}
 
 	return &block
+}
+
+func (p *Parser) parseFunctionParams() []*ast.Identifier {
+	identifiers := []*ast.Identifier{}
+
+	// empty body
+	if p.TokenIs(p.peekToken, token.RIGHT_PAREN) {
+		p.nextToken()
+		return identifiers
+	}
+
+	p.nextToken()
+	ident := &ast.Identifier{
+		Token: p.currToken,
+		Value: p.currToken.Literal,
+	}
+	// append the first arg
+	identifiers = append(identifiers, ident)
+
+	for p.TokenIs(p.peekToken, token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		ident := &ast.Identifier{
+			Token: p.currToken,
+			Value: p.currToken.Literal,
+		}
+		identifiers = append(identifiers, ident)
+	}
+	if !p.expectNextToken(token.RIGHT_PAREN) {
+		return nil
+	}
+
+	return identifiers
+}
+
+func (p *Parser) parseFunctionLiteral() ast.Expression {
+	lit := &ast.FunctionLiteral{
+		Token: p.currToken,
+	}
+
+	if !p.expectNextToken(token.LEFT_PAREN) {
+		return nil
+	}
+
+	// the params could be :
+	//		myFunc(x, y, fn(x, y) { return x > y; });
+	//		( ) --> empty
+	//		(1 + 2, 3 * 8)
+	lit.Parameters = p.parseFunctionParams()
+
+	if !p.expectNextToken(token.LEFT_BRACE) {
+		return nil
+	}
+
+	lit.Body = p.parseBlockStatement()
+
+	return lit
 }
