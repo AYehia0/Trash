@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"trash/eval"
 	"trash/lexer"
 	"trash/parser"
 )
@@ -41,8 +42,12 @@ func Start(in io.Reader, out io.Writer) {
 			logErrors(out, parser.Errors())
 			continue
 		}
-		io.WriteString(out, prog.String())
-		io.WriteString(out, "\n")
+
+		evaluated := eval.Eval(prog)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
