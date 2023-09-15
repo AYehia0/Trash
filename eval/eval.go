@@ -5,6 +5,13 @@ import (
 	"trash/object"
 )
 
+// instead of each time we encounter a new value we create one, instead we ref it.
+var (
+	NULL  = &object.Null{}
+	TRUE  = &object.Bool{Value: true}
+	FALSE = &object.Bool{Value: false}
+)
+
 func Eval(n ast.Node) object.Object {
 	switch node := n.(type) {
 
@@ -17,6 +24,9 @@ func Eval(n ast.Node) object.Object {
 
 	case *ast.IntegerLiteral:
 		return &object.Int{Value: node.Value}
+
+	case *ast.Boolean:
+		return mapBool(node.Value)
 	}
 	return nil
 }
@@ -29,4 +39,11 @@ func evalStatements(stmts []ast.Statement) object.Object {
 		res = Eval(stmt)
 	}
 	return res
+}
+
+func mapBool(inp bool) *object.Bool {
+	if inp {
+		return TRUE
+	}
+	return FALSE
 }
