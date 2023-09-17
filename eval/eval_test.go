@@ -29,8 +29,10 @@ func TestEvalBoolExpression(t *testing.T) {
 	}{
 		{"false", false},
 		{"true", true},
-		// {"!true", false},
-		// {"!false", true},
+		{"!true", false},
+		{"!false", true},
+		{"!!true", true},
+		{"!!false", false},
 	}
 
 	for _, tt := range tests {
