@@ -39,9 +39,20 @@ func evalPrefixExpression(op string, right object.Object) object.Object {
 	switch op {
 	case "!":
 		return evalBangOpExpression(right)
+	case "-":
+		return evalMinusOpExpression(right)
 	default:
 		return NULL
 	}
+}
+
+func evalMinusOpExpression(right object.Object) object.Object {
+	// check if the expression is bool
+	if right.Type() != object.INT_OBJ {
+		return NULL
+	}
+	val := right.(*object.Int).Value
+	return &object.Int{Value: -val}
 }
 
 func evalBangOpExpression(right object.Object) object.Object {
