@@ -55,6 +55,8 @@ func evalIntInfixExpression(left object.Object, op string, right object.Object) 
 	rightVal := right.(*object.Int).Value
 
 	switch op {
+
+	// integer expressions
 	case "+":
 		return &object.Int{Value: leftVal + rightVal}
 	case "-":
@@ -64,6 +66,16 @@ func evalIntInfixExpression(left object.Object, op string, right object.Object) 
 	// TODO: return float values after impl float vars
 	case "/":
 		return &object.Int{Value: leftVal / rightVal}
+
+	// boolean expressions
+	case "<":
+		return mapBool(leftVal < rightVal)
+	case ">":
+		return mapBool(leftVal > rightVal)
+	case "==":
+		return mapBool(leftVal == rightVal)
+	case "!=":
+		return mapBool(leftVal != rightVal)
 	default:
 		return NULL
 	}
