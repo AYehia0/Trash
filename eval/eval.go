@@ -45,6 +45,11 @@ func evalInfixExpression(left object.Object, op string, right object.Object) obj
 	switch {
 	case left.Type() == object.INT_OBJ && right.Type() == object.INT_OBJ:
 		return evalIntInfixExpression(left, op, right)
+
+	case op == "==":
+		return mapBool(left == right)
+	case op == "!=":
+		return mapBool(left != right)
 	default:
 		return NULL
 	}
