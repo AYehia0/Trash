@@ -31,10 +31,43 @@ func Eval(n ast.Node) object.Object {
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
 		return evalPrefixExpression(node.Operator, right)
+	case *ast.InfixExpression:
+		left := Eval(node.Left)
+		right := Eval(node.Right)
+
+		return evalInfixExpression(left, node.Operator, right)
 	}
 	return nil
 }
 
+func evalInfixExpression(left object.Object, op string, right object.Object) object.Object {
+	// integars
+	switch {
+	case left.Type() == object.INT_OBJ && right.Type() == object.INT_OBJ:
+		return evalIntInfixExpression(left, op, right)
+	default:
+		return NULL
+	}
+}
+
+func evalIntInfixExpression(left object.Object, op string, right object.Object) object.Object {
+	leftVal := left.(*object.Int).Value
+	rightVal := right.(*object.Int).Value
+
+	switch op {
+	case "+":
+		return &object.Int{Value: leftVal + rightVal}
+	case "-":
+		return &object.Int{Value: leftVal - rightVal}
+	case "*":
+		return &object.Int{Value: leftVal * rightVal}
+	// TODO: return float values after impl float vars
+	case "/":
+		return &object.Int{Value: leftVal / rightVal}
+	default:
+		return NULL
+	}
+}
 func evalPrefixExpression(op string, right object.Object) object.Object {
 	switch op {
 	case "!":
