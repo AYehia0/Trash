@@ -33,10 +33,15 @@ type Bool struct {
 }
 type Null struct{}
 
+type ReturnValue struct {
+	Value Object
+}
+
 const (
-	INT_OBJ  = "INT"
-	BOOL_OBJ = "BOOL"
-	NULL_OBJ = "NULL"
+	INT_OBJ    = "INT"
+	BOOL_OBJ   = "BOOL"
+	NULL_OBJ   = "NULL"
+	RETURN_OBJ = "RETURN" // wrap the return value into an object
 )
 
 // --- Integar
@@ -62,4 +67,11 @@ func (n *Null) Inspect() string {
 }
 func (n *Null) Type() ObjectType {
 	return NULL_OBJ
+}
+
+func (r *ReturnValue) Inspect() string {
+	return r.Value.Inspect()
+}
+func (r *ReturnValue) Type() ObjectType {
+	return RETURN_OBJ
 }

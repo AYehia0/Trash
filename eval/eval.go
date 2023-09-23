@@ -22,6 +22,10 @@ func Eval(n ast.Node) object.Object {
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
 
+	case *ast.ReturnStatement:
+		returnVal := Eval(node.ReturnValue)
+		return &object.ReturnValue{Value: returnVal}
+
 	case *ast.IntegerLiteral:
 		return &object.Int{Value: node.Value}
 
@@ -152,6 +156,9 @@ func evalStatements(stmts []ast.Statement) object.Object {
 	for _, stmt := range stmts {
 		// The return value of the outer call to Eval is the return value of the last call
 		res = Eval(stmt)
+		if returnVal, ok := res.(*object.ReturnValue); ok {
+			return returnVal.Value // unpack
+		}
 	}
 	return res
 }

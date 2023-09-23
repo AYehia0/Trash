@@ -91,6 +91,23 @@ func TestIfElseExpressions(t *testing.T) {
 	}
 }
 
+func TestReturnStetements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"return 21;", 21},
+		{"return 21; 90;", 21},
+		{"90; if (true) { return 10; 39; }", 10},
+		{"return 2 * 10;", 20},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntObject(t, evaluated, tt.expected)
+	}
+}
+
 func testNullObject(t *testing.T, obj object.Object) bool {
 	if obj != NULL {
 		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)
