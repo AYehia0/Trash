@@ -179,8 +179,11 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 	for _, stmt := range block.Statements {
 		// The return value of the outer call to Eval is the return value of the last call
 		res = Eval(stmt)
-		if res != nil && res.Type() == object.RETURN_OBJ {
-			return res
+		if res != nil {
+			resType := res.Type()
+			if resType == object.RETURN_OBJ || resType == object.ERROR_OBJ {
+				return res
+			}
 		}
 	}
 	return res
