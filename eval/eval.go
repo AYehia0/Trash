@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"fmt"
 	"trash/ast"
 	"trash/object"
 )
@@ -50,6 +51,10 @@ func Eval(n ast.Node) object.Object {
 	return nil
 }
 
+func newErr(format string, a ...interface{}) *object.Error {
+	return &object.Error{Message: fmt.Sprintf(format, a...)}
+}
+
 func evalIfExpression(ie *ast.IfExpression) object.Object {
 	conditionVal := Eval(ie.Condition)
 	if isTruthy(conditionVal) {
@@ -82,8 +87,10 @@ func evalInfixExpression(left object.Object, op string, right object.Object) obj
 		return mapBool(left == right)
 	case op == "!=":
 		return mapBool(left != right)
+	case left.Type() != right.Type():
+		return newErr("Type mismatch: %s %s %s", left.Type(), op, right.Type())
 	default:
-		return NULL
+		return newErr("Unknown operator: %s %s %s", left.Type(), op, right.Type())
 	}
 }
 
@@ -124,14 +131,14 @@ func evalPrefixExpression(op string, right object.Object) object.Object {
 	case "-":
 		return evalMinusOpExpression(right)
 	default:
-		return NULL
+		return newErr("Unkown Error: %s%s", op, right)
 	}
 }
 
 func evalMinusOpExpression(right object.Object) object.Object {
 	// check if the expression is bool
 	if right.Type() != object.INT_OBJ {
-		return NULL
+		return newErr("Unknown operator: -%s", right.Type())
 	}
 	val := right.(*object.Int).Value
 	return &object.Int{Value: -val}
@@ -156,8 +163,11 @@ func evalProgram(prog *ast.Program) object.Object {
 	for _, stmt := range prog.Statements {
 		// The return value of the outer call to Eval is the return value of the last call
 		res = Eval(stmt)
-		if returnVal, ok := res.(*object.ReturnValue); ok {
-			return returnVal.Value // unpack
+		switch res := res.(type) {
+		case *object.ReturnValue:
+			return res.Value // unpack
+		case *object.Error:
+			return res
 		}
 	}
 	return res

@@ -36,12 +36,16 @@ type Null struct{}
 type ReturnValue struct {
 	Value Object
 }
+type Error struct {
+	Message string
+}
 
 const (
 	INT_OBJ    = "INT"
 	BOOL_OBJ   = "BOOL"
 	NULL_OBJ   = "NULL"
 	RETURN_OBJ = "RETURN" // wrap the return value into an object
+	ERROR_OBJ  = "ERROR"
 )
 
 // --- Integar
@@ -69,9 +73,18 @@ func (n *Null) Type() ObjectType {
 	return NULL_OBJ
 }
 
+// --- Return
 func (r *ReturnValue) Inspect() string {
 	return r.Value.Inspect()
 }
 func (r *ReturnValue) Type() ObjectType {
 	return RETURN_OBJ
+}
+
+// --- Error
+func (e *Error) Inspect() string {
+	return "Error: " + e.Message
+}
+func (e *Error) Type() ObjectType {
+	return ERROR_OBJ
 }
