@@ -100,6 +100,7 @@ func TestReturnStetements(t *testing.T) {
 		{"return 21; 90;", 21},
 		{"90; if (true) { return 10; 39; }", 10},
 		{"return 2 * 10;", 20},
+		{"if (4 > 2) { if (3 > 1) { return 20; } return 0;}", 20},
 	}
 
 	for _, tt := range tests {
