@@ -147,6 +147,10 @@ func TestErrorHandling(t *testing.T) {
 			return 1;
 			}`, "Unknown operator: BOOL + BOOL",
 		},
+		{
+			"xyz",
+			"Identifier not found: xyz",
+		},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -174,8 +178,9 @@ func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.Parse()
+	env := object.NewEnv()
 
-	return Eval(program)
+	return Eval(program, env)
 }
 
 func testIntObject(t *testing.T, obj object.Object, expected int64) bool {
@@ -204,4 +209,32 @@ func testBoolObject(t *testing.T, obj object.Object, expected bool) bool {
 		return false
 	}
 	return true
+}
+
+func TestLetStatement(t *testing.T) {
+	tests := []struct {
+		input  string
+		expect int64
+	}{
+		{"let x = 9; x;", 9},
+		{"let x = 6; x;", 6},
+		{"let x = -9; let y = x; y", -9},
+		{"let x = -6; let y = x + 6; y", 0},
+		// {"let x = 5 + 5 + 5 + 5 - 10; x = x + 10; x", 20}, // doesn't work !!
+		// {"let x = 2 * 2 * 2 * 2 * 2; let a = x; a = a * 2; a", 64}, // doesn't work !!
+		{"let x = -50 + 100 + -50; x;", 0},
+		{"let x = 5 * 2 + 10; x;", 20},
+		// {"let x = 5 + 2 * 10; x = x - 5", 20}, // doesn't work !!
+		{"let x = 20 + 2 * -10; x;", 0},
+		{"let x = 50 / 2 * 2 + 10; x;", 60},
+		{"let x = 2 * (5 + 10); x;", 30},
+		{"let x = 3 * 3 * 3 + 10; x;", 37},
+		{"let x = 3 * (3 * 3) + 10; x;", 37},
+		{"let x = (5 + 10 * 2 + 15 / 3) * 2 + -10; x;", 50},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntObject(t, evaluated, tt.expect)
+	}
 }

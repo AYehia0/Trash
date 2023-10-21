@@ -88,3 +88,25 @@ func (e *Error) Inspect() string {
 func (e *Error) Type() ObjectType {
 	return ERROR_OBJ
 }
+
+// --- Environment : used to keep track of assigned objects (basically a hashmap)
+type Env struct {
+	store map[string]Object
+}
+
+func NewEnv() *Env {
+	env := make(map[string]Object)
+	return &Env{
+		store: env,
+	}
+}
+
+// getters and setters for our store
+func (env *Env) Get(key string) (Object, bool) {
+	obj, ok := env.store[key]
+	return obj, ok
+}
+
+func (env *Env) Set(key string, val Object) {
+	env.store[key] = val
+}

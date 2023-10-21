@@ -13,18 +13,18 @@ var (
 	FALSE = &object.Bool{Value: false}
 )
 
-func Eval(n ast.Node) object.Object {
+func Eval(n ast.Node, env *object.Env) object.Object {
 	switch node := n.(type) {
 
 	// statements
 	case *ast.Program:
-		return evalProgram(node)
+		return evalProgram(node, env)
 
 	case *ast.ExpressionStatement:
-		return Eval(node.Expression)
+		return Eval(node.Expression, env)
 
 	case *ast.ReturnStatement:
-		returnVal := Eval(node.ReturnValue)
+		returnVal := Eval(node.ReturnValue, env)
 		if isErr(returnVal) {
 			return returnVal
 		}
@@ -37,29 +37,39 @@ func Eval(n ast.Node) object.Object {
 		return mapBool(node.Value)
 
 	case *ast.PrefixExpression:
-		right := Eval(node.Right)
+		right := Eval(node.Right, env)
 		if isErr(right) {
 			return right
 		}
 		return evalPrefixExpression(node.Operator, right)
 
 	case *ast.InfixExpression:
-		left := Eval(node.Left)
+		left := Eval(node.Left, env)
 		if isErr(left) {
 			return left
 		}
 
-		right := Eval(node.Right)
+		right := Eval(node.Right, env)
 		if isErr(right) {
 			return right
 		}
 		return evalInfixExpression(left, node.Operator, right)
 
 	case *ast.BlockStatement:
-		return evalBlockStatement(node)
+		return evalBlockStatement(node, env)
 
 	case *ast.IfExpression:
-		return evalIfExpression(node)
+		return evalIfExpression(node, env)
+
+	case *ast.Identifier:
+		return evalIdenterifer(node, env)
+
+	case *ast.LetStatement:
+		val := Eval(node.Value, env)
+		if isErr(val) {
+			return val
+		}
+		env.Set(node.Name.Value, val)
 	}
 	return nil
 }
@@ -68,15 +78,23 @@ func newErr(format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }
 
-func evalIfExpression(ie *ast.IfExpression) object.Object {
-	conditionVal := Eval(ie.Condition)
+func evalIdenterifer(node *ast.Identifier, env *object.Env) object.Object {
+	val, ok := env.Get(node.Value)
+	if !ok {
+		return newErr("Identifier not found: %s", node.Value)
+	}
+	return val
+}
+
+func evalIfExpression(ie *ast.IfExpression, env *object.Env) object.Object {
+	conditionVal := Eval(ie.Condition, env)
 	if isErr(conditionVal) {
 		return conditionVal
 	}
 	if isTruthy(conditionVal) {
-		return Eval(ie.Consequence)
+		return Eval(ie.Consequence, env)
 	} else if ie.Alternative != nil {
-		return Eval(ie.Alternative)
+		return Eval(ie.Alternative, env)
 	}
 	return NULL
 }
@@ -173,12 +191,12 @@ func evalBangOpExpression(right object.Object) object.Object {
 	}
 }
 
-func evalProgram(prog *ast.Program) object.Object {
+func evalProgram(prog *ast.Program, env *object.Env) object.Object {
 	var res object.Object
 
 	for _, stmt := range prog.Statements {
 		// The return value of the outer call to Eval is the return value of the last call
-		res = Eval(stmt)
+		res = Eval(stmt, env)
 		switch res := res.(type) {
 		case *object.ReturnValue:
 			return res.Value // unpack
@@ -189,12 +207,12 @@ func evalProgram(prog *ast.Program) object.Object {
 	return res
 }
 
-func evalBlockStatement(block *ast.BlockStatement) object.Object {
+func evalBlockStatement(block *ast.BlockStatement, env *object.Env) object.Object {
 	var res object.Object
 
 	for _, stmt := range block.Statements {
 		// The return value of the outer call to Eval is the return value of the last call
-		res = Eval(stmt)
+		res = Eval(stmt, env)
 		if res != nil {
 			resType := res.Type()
 			if resType == object.RETURN_OBJ || resType == object.ERROR_OBJ {

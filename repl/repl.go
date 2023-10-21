@@ -10,6 +10,7 @@ import (
 	"io"
 	"trash/eval"
 	"trash/lexer"
+	"trash/object"
 	"trash/parser"
 )
 
@@ -26,6 +27,8 @@ const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnv()
+
 	fmt.Print(TRASH_ICON)
 	for {
 		fmt.Printf(PROMPT)
@@ -43,7 +46,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := eval.Eval(prog)
+		evaluated := eval.Eval(prog, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
