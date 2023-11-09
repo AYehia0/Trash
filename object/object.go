@@ -14,7 +14,12 @@ Maybe the simplest way is to represent each value as Object.
 
 package object
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"strings"
+	"trash/ast"
+)
 
 type ObjectType string
 
@@ -46,6 +51,7 @@ const (
 	NULL_OBJ   = "NULL"
 	RETURN_OBJ = "RETURN" // wrap the return value into an object
 	ERROR_OBJ  = "ERROR"
+	FUNC_OBJ   = "FUNCTION"
 )
 
 // --- Integar
@@ -89,24 +95,27 @@ func (e *Error) Type() ObjectType {
 	return ERROR_OBJ
 }
 
-// --- Environment : used to keep track of assigned objects (basically a hashmap)
-type Env struct {
-	store map[string]Object
+// the reason I am putting Env here to allow direct access of the Environment where function is defined in, this is useful for adding closures
+type Function struct {
+	Params []*ast.Identifier
+	Body   *ast.BlockStatement
+	Env    *Env
 }
 
-func NewEnv() *Env {
-	env := make(map[string]Object)
-	return &Env{
-		store: env,
+func (f *Function) Type() ObjectType {
+	return FUNC_OBJ
+}
+func (f *Function) Inspect() string {
+	var out bytes.Buffer
+	params := []string{}
+	for _, p := range f.Params {
+		params = append(params, p.String())
 	}
-}
-
-// getters and setters for our store
-func (env *Env) Get(key string) (Object, bool) {
-	obj, ok := env.store[key]
-	return obj, ok
-}
-
-func (env *Env) Set(key string, val Object) {
-	env.store[key] = val
+	out.WriteString("fn")
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(f.Body.String())
+	out.WriteString("\n}")
+	return out.String()
 }

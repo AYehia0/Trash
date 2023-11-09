@@ -30,6 +30,24 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 		}
 		return &object.ReturnValue{Value: returnVal}
 
+	case *ast.FunctionLiteral:
+		params := node.Parameters
+		body := node.Body
+		return &object.Function{Params: params, Body: body, Env: env}
+
+	case *ast.CallExpression:
+		function := Eval(node.Function, env)
+
+		if isErr(function) {
+			return function
+		}
+		args := evalExpressions(node.Arguments, env)
+		if len(args) == 1 {
+			if isErr(args[0]) {
+				return args[0]
+			}
+		}
+		return getObjectFunction(function, args)
 	case *ast.IntegerLiteral:
 		return &object.Int{Value: node.Value}
 
@@ -82,6 +100,43 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 	return nil
 }
 
+func evalExpressions(exps []ast.Expression, env *object.Env) []object.Object {
+	var result []object.Object
+	for _, obj := range exps {
+		evaluted := Eval(obj, env)
+		if isErr(evaluted) {
+			return []object.Object{evaluted}
+		}
+		result = append(result, evaluted)
+	}
+	return result
+}
+
+func getObjectFunction(function object.Object, args []object.Object) object.Object {
+	fn, ok := function.(*object.Function)
+	if !ok {
+		return newErr("%s is not a function", function.Type())
+	}
+	// mismatching args with given
+	// TODO: add optional args
+	if len(args) != len(fn.Params) {
+		return newErr("Error: missing args to the function: %s", function.Inspect())
+	}
+	expandedEnv := expandFunctionEnv(fn, args)
+	evaluated := Eval(fn.Body, expandedEnv)
+	if returnVal, ok := evaluated.(*object.ReturnValue); ok {
+		return returnVal.Value
+	}
+	return evaluated
+}
+
+func expandFunctionEnv(function *object.Function, args []object.Object) *object.Env {
+	env := object.NewEnclosedEnv(function.Env)
+	for i, param := range function.Params {
+		env.Set(param.Value, args[i])
+	}
+	return env
+}
 func newErr(format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }
