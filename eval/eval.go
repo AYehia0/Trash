@@ -70,6 +70,14 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 			return val
 		}
 		env.Set(node.Name.Value, val)
+
+	// TODO: really duplicate code from LetStatement
+	case *ast.AssignExpression:
+		val := Eval(node.Value, env)
+		if isErr(val) {
+			return val
+		}
+		env.Set(node.Name.Value, val)
 	}
 	return nil
 }

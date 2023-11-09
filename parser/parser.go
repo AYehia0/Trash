@@ -191,10 +191,39 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
-	return &ast.Identifier{
+	id := &ast.Identifier{
 		Token: p.currToken,
 		Value: p.currToken.Literal,
 	}
+
+	if p.TokenIs(p.peekToken, token.ASSIGN) {
+		return p.parseAssignIdentifier(id)
+	}
+	return id
+}
+
+func (p *Parser) parseAssignIdentifier(id *ast.Identifier) ast.Expression {
+
+	// x = x + 30
+	ae := &ast.AssignExpression{
+		Token: p.currToken,
+		Name:  id,
+	}
+
+	if !p.expectNextToken(token.ASSIGN) {
+		return nil
+	}
+
+	// advance after the assign =
+	p.nextToken()
+
+	ae.Value = p.parseExpression(LOWEST)
+
+	if p.TokenIs(p.peekToken, token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return ae
 }
 
 // let <identifier> = <expression>

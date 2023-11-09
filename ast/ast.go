@@ -270,3 +270,23 @@ func (ce *CallExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
+
+type AssignExpression struct {
+	Token token.Token // =
+	Name  *Identifier // left side
+	Value Expression  // right side
+}
+
+func (ae *AssignExpression) expressionNode()      {}
+func (ae *AssignExpression) TokenLiteral() string { return ae.Token.Literal }
+func (ae *AssignExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ae.Name.Value)
+	out.WriteString(" = ")
+
+	if ae.Value != nil {
+		out.WriteString(ae.Value.String())
+	}
+	return out.String()
+}
