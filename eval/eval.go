@@ -83,6 +83,7 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 
+	// builtin functions are also Identifiers
 	case *ast.Identifier:
 		return evalIdenterifer(node, env)
 
@@ -117,21 +118,27 @@ func evalExpressions(exps []ast.Expression, env *object.Env) []object.Object {
 }
 
 func getObjectFunction(function object.Object, args []object.Object) object.Object {
-	fn, ok := function.(*object.Function)
-	if !ok {
-		return newErr("%s is not a function", function.Type())
+
+	switch fn := function.(type) {
+	case *object.Function:
+		// mismatching args with given
+		// TODO: add optional args
+		if len(args) != len(fn.Params) {
+			return newErr("Error: missing args to the function: %s", function.Inspect())
+		}
+		expandedEnv := expandFunctionEnv(fn, args)
+		evaluated := Eval(fn.Body, expandedEnv)
+		if returnVal, ok := evaluated.(*object.ReturnValue); ok {
+			return returnVal.Value
+		}
+		return evaluated
+
+	case *object.Builtin:
+		// just call the function
+		return fn.Func(args...)
+	default:
+		return newErr("%s isn't a function (user defined or builtin).", fn.Inspect())
 	}
-	// mismatching args with given
-	// TODO: add optional args
-	if len(args) != len(fn.Params) {
-		return newErr("Error: missing args to the function: %s", function.Inspect())
-	}
-	expandedEnv := expandFunctionEnv(fn, args)
-	evaluated := Eval(fn.Body, expandedEnv)
-	if returnVal, ok := evaluated.(*object.ReturnValue); ok {
-		return returnVal.Value
-	}
-	return evaluated
 }
 
 func expandFunctionEnv(function *object.Function, args []object.Object) *object.Env {
@@ -146,11 +153,14 @@ func newErr(format string, a ...interface{}) *object.Error {
 }
 
 func evalIdenterifer(node *ast.Identifier, env *object.Env) object.Object {
-	val, ok := env.Get(node.Value)
-	if !ok {
-		return newErr("Identifier not found: %s", node.Value)
+	if val, ok := env.Get(node.Value); ok {
+		return val
 	}
-	return val
+
+	if val, ok := builtins[node.Value]; ok {
+		return val
+	}
+	return newErr("Identifier not found: %s", node.Value)
 }
 
 func evalIfExpression(ie *ast.IfExpression, env *object.Env) object.Object {

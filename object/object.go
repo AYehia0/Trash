@@ -47,16 +47,30 @@ type ReturnValue struct {
 type Error struct {
 	Message string
 }
+type BuiltinFuncs func(args ...Object) Object
+
+type Builtin struct {
+	Func BuiltinFuncs
+}
 
 const (
-	INT_OBJ    = "INT"
-	STR_OBJ    = "STRING"
-	BOOL_OBJ   = "BOOL"
-	NULL_OBJ   = "NULL"
-	RETURN_OBJ = "RETURN" // wrap the return value into an object
-	ERROR_OBJ  = "ERROR"
-	FUNC_OBJ   = "FUNCTION"
+	INT_OBJ     = "INT"
+	STR_OBJ     = "STRING"
+	BOOL_OBJ    = "BOOL"
+	NULL_OBJ    = "NULL"
+	RETURN_OBJ  = "RETURN" // wrap the return value into an object
+	ERROR_OBJ   = "ERROR"
+	FUNC_OBJ    = "FUNCTION"
+	BUILTIN_OBJ = "BUILTIN"
 )
+
+// --- Builtin functions
+func (fn *Builtin) Inspect() string {
+	return "Built-in Function"
+}
+func (fn *Builtin) Type() ObjectType {
+	return BUILTIN_OBJ
+}
 
 // --- Integar
 func (i *Int) Inspect() string {

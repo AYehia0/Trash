@@ -299,3 +299,36 @@ func TestFunctionApplication(t *testing.T) {
 		testIntegerObject(t, testEval(tt.input), tt.expected)
 	}
 }
+
+func TestBuiltinFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		// the len
+		{`len("Hello")`, 5},
+		{`len("")`, 0},
+		{`len("Hello, world")`, 12},
+		{`len(12)`, `Builtin "len" doesn't take INT args`},
+		{`len("1", "2")`, `Builtin "len": wrong number of args. got=2, expected=1`},
+		{`len()`, `Builtin "len": wrong number of args. got=0, expected=1`},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		switch expected := tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int64(expected))
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("object is not Error. got=%T (%+v)",
+					evaluated, evaluated)
+				continue
+			}
+			if errObj.Message != expected {
+				t.Errorf("wrong error message. expected=%q, got=%q",
+					expected, errObj.Message)
+			}
+		}
+	}
+}
