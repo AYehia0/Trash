@@ -6,12 +6,14 @@ package token
 // using a constant since our language is going to really limited and small, while it's better to use a hashmap
 const (
 	// identifiers: let IDENTIFER = 4;
-	IDENT = "IDENT" // add, foobar, x, y
-	INT   = "INT"   // for numbers, only supports integers for now
+	IDENT  = "IDENT" // add, foobar, x, y
+	INT    = "INT"   // for numbers, only supports integers for now
+	STRING = "STRING"
 
 	// operators: +, *, /, -
 	ASSIGN    = "="
 	PLUS      = "+"
+	CONCAT    = ":"
 	NEG       = "-"
 	MUL       = "*"
 	DIV       = "/"

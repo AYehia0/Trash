@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"trash/ast"
 	"trash/object"
+	"trash/token"
 )
 
 // instead of each time we encounter a new value we create one, instead we ref it.
@@ -50,6 +51,9 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 		return getObjectFunction(function, args)
 	case *ast.IntegerLiteral:
 		return &object.Int{Value: node.Value}
+
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
 
 	case *ast.Boolean:
 		return mapBool(node.Value)
@@ -180,6 +184,10 @@ func evalInfixExpression(left object.Object, op string, right object.Object) obj
 	case left.Type() == object.INT_OBJ && right.Type() == object.INT_OBJ:
 		return evalIntInfixExpression(left, op, right)
 
+	// string concat
+	case left.Type() == object.STR_OBJ && right.Type() == object.STR_OBJ:
+		return evalStringConcat(left, op, right)
+
 	case op == "==":
 		return mapBool(left == right)
 	case op == "!=":
@@ -189,6 +197,17 @@ func evalInfixExpression(left object.Object, op string, right object.Object) obj
 	default:
 		return newErr("Unknown operator: %s %s %s", left.Type(), op, right.Type())
 	}
+}
+
+func evalStringConcat(left object.Object, op string, right object.Object) object.Object {
+	leftVal := left.(*object.String).Value
+	rightVal := right.(*object.String).Value
+
+	if op != token.CONCAT {
+		return newErr("Unknown concat operator: '%s', use %s", op, token.CONCAT)
+	}
+
+	return &object.String{Value: leftVal + rightVal}
 }
 
 func evalIntInfixExpression(left object.Object, op string, right object.Object) object.Object {
@@ -228,7 +247,7 @@ func evalPrefixExpression(op string, right object.Object) object.Object {
 	case "-":
 		return evalMinusOpExpression(right)
 	default:
-		return newErr("Unkown Error: %s%s", op, right)
+		return newErr("Unknown Error: %s%s", op, right)
 	}
 }
 

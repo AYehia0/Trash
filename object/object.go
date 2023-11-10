@@ -33,6 +33,9 @@ type Object interface {
 type Int struct {
 	Value int64
 }
+type String struct {
+	Value string
+}
 type Bool struct {
 	Value bool
 }
@@ -47,6 +50,7 @@ type Error struct {
 
 const (
 	INT_OBJ    = "INT"
+	STR_OBJ    = "STRING"
 	BOOL_OBJ   = "BOOL"
 	NULL_OBJ   = "NULL"
 	RETURN_OBJ = "RETURN" // wrap the return value into an object
@@ -60,6 +64,14 @@ func (i *Int) Inspect() string {
 }
 func (i *Int) Type() ObjectType {
 	return INT_OBJ
+}
+
+// --- String
+func (st *String) Inspect() string {
+	return fmt.Sprintf("%s", st.Value)
+}
+func (st *String) Type() ObjectType {
+	return STR_OBJ
 }
 
 // --- Boolean

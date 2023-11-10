@@ -29,6 +29,18 @@ func (l *Lexer) readChar() {
 	l.nextPosition++
 }
 
+func (l *Lexer) readString() string {
+	position := l.position + 1
+	for {
+		l.readChar()
+
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
+	}
+	return l.input[position:l.position]
+}
+
 // check if the character is a word
 // SUPPORT : ASCII only for now
 func isLetter(ch byte) bool {
@@ -119,8 +131,13 @@ func (l *Lexer) NextToken() token.Token {
 		} else {
 			t = newToken(token.BANG, l.ch)
 		}
+	case '"':
+		t.Type = token.STRING
+		t.Literal = l.readString()
 	case '+':
 		t = newToken(token.PLUS, l.ch)
+	case ':':
+		t = newToken(token.CONCAT, l.ch)
 	case '-':
 		t = newToken(token.NEG, l.ch)
 	case '*':
