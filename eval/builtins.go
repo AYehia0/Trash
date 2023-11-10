@@ -4,6 +4,7 @@ Instead of attaching the builtins to the environment store, it's better to have 
 package eval
 
 import (
+	"os"
 	"trash/object"
 )
 
@@ -20,6 +21,26 @@ var builtins = map[string]*object.Builtin{
 			default:
 				return newErr(`Builtin "len" doesn't take %s args`, arg.Type())
 			}
+		},
+	},
+	// exit with status code
+	"exit": {
+		Func: func(args ...object.Object) object.Object {
+			if len(args) > 1 {
+				return newErr(`Builtin "len": wrong number of args. got=%d, expected=1`, len(args))
+			}
+
+			statusCode := 0
+			if len(args) == 1 {
+				statusArg, ok := args[0].(*object.Int)
+				if !ok {
+					return newErr("Builtin 'exit': argument must be an integer")
+				}
+				statusCode = int(statusArg.Value)
+			}
+
+			os.Exit(statusCode)
+			return NULL
 		},
 	},
 }
