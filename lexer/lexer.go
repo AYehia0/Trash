@@ -161,6 +161,10 @@ func (l *Lexer) NextToken() token.Token {
 		t = newToken(token.LEFT_BRACE, l.ch)
 	case '}':
 		t = newToken(token.RIGHT_BRACE, l.ch)
+	case '[':
+		t = newToken(token.LEFT_BRACKET, l.ch)
+	case ']':
+		t = newToken(token.RIGHT_BRACKET, l.ch)
 
 	// end of the file
 	case 0:

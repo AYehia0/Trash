@@ -55,6 +55,30 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
 
+	case *ast.ListLiteral:
+		values := evalExpressions(node.Values, env)
+
+		if len(values) == 1 && isErr(values[0]) {
+			return values[0]
+		}
+		return &object.List{Values: values}
+
+	// we have to evaluate both the left and right (index) before we return the actual index
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+
+		if isErr(left) {
+			return left
+		}
+
+		index := Eval(node.Index, env)
+		if isErr(index) {
+			return index
+		}
+
+		// calcs the whole expression after subsituting the index in the expression
+		return evalIndexExpression(left, index)
+
 	case *ast.Boolean:
 		return mapBool(node.Value)
 
@@ -117,6 +141,25 @@ func evalExpressions(exps []ast.Expression, env *object.Env) []object.Object {
 	return result
 }
 
+func evalIndexExpression(left, index object.Object) object.Object {
+	switch {
+	case left.Type() == object.LIST_OBJ && index.Type() == object.INT_OBJ:
+		return evalListIndexExpression(left, index)
+	default:
+		return newErr("Index operator not supported: %s", left.Type())
+	}
+}
+
+func evalListIndexExpression(list, index object.Object) object.Object {
+	listObj := list.(*object.List)
+	idx := index.(*object.Int).Value
+	maxLen := int64(len(listObj.Values) - 1)
+
+	if idx < 0 || idx > maxLen {
+		return NULL
+	}
+	return listObj.Values[idx]
+}
 func getObjectFunction(function object.Object, args []object.Object) object.Object {
 
 	switch fn := function.(type) {

@@ -52,6 +52,9 @@ type BuiltinFuncs func(args ...Object) Object
 type Builtin struct {
 	Func BuiltinFuncs
 }
+type List struct {
+	Values []Object // list can contain anything lol, JS are you happy now ?
+}
 
 const (
 	INT_OBJ     = "INT"
@@ -62,7 +65,24 @@ const (
 	ERROR_OBJ   = "ERROR"
 	FUNC_OBJ    = "FUNCTION"
 	BUILTIN_OBJ = "BUILTIN"
+	LIST_OBJ    = "LIST"
 )
+
+// --- List
+func (ls *List) Type() ObjectType {
+	return LIST_OBJ
+}
+func (ls *List) Inspect() string {
+	var out bytes.Buffer
+	elements := []string{}
+	for _, e := range ls.Values {
+		elements = append(elements, e.Inspect())
+	}
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+	return out.String()
+}
 
 // --- Builtin functions
 func (fn *Builtin) Inspect() string {

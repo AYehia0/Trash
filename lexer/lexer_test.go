@@ -23,6 +23,7 @@ func TestNextToken(t *testing.T) {
 		!= ==
 		"string"
 		"this is a string"
+		[1,2,3]
 	`
 	expectedTests := []struct {
 		expectedType    token.TokenType
@@ -100,6 +101,13 @@ func TestNextToken(t *testing.T) {
 		{token.EQUAL, "=="},
 		{token.STRING, "string"},
 		{token.STRING, "this is a string"},
+		{token.LEFT_BRACKET, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "2"},
+		{token.COMMA, ","},
+		{token.INT, "3"},
+		{token.RIGHT_BRACKET, "]"},
 
 		{token.EOF, ""},
 	}

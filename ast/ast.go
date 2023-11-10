@@ -146,6 +146,45 @@ func (st *StringLiteral) expressionNode()      {}
 func (st *StringLiteral) TokenLiteral() string { return st.Token.Literal }
 func (st *StringLiteral) String() string       { return st.Token.Literal }
 
+type ListLiteral struct {
+	Token  token.Token
+	Values []Expression
+}
+
+func (lt *ListLiteral) expressionNode()      {}
+func (lt *ListLiteral) TokenLiteral() string { return lt.Token.Literal }
+func (lt *ListLiteral) String() string {
+	var out bytes.Buffer
+	elements := []string{}
+	for _, el := range lt.Values {
+		elements = append(elements, el.String())
+	}
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+	return out.String()
+}
+
+// Index an expression : <expression>[<expression>]
+// we will treat the [ : a[0] as infix operator
+type IndexExpression struct {
+	Token token.Token // first [
+	Left  Expression
+	Index Expression // the right side inside the []
+}
+
+func (ind *IndexExpression) expressionNode()      {}
+func (ind *IndexExpression) TokenLiteral() string { return ind.Token.Literal }
+func (ind *IndexExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(ind.Left.String())
+	out.WriteString("[")
+	out.WriteString(ind.Index.String())
+	out.WriteString("])")
+	return out.String()
+}
+
 type PrefixExpression struct {
 	Token    token.Token
 	Operator string // one those in the lexer definations

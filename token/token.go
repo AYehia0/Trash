@@ -24,12 +24,14 @@ const (
 	NOT_EQUAL = "!="
 
 	// delimiters: (, ), {, }, ;, ,
-	SEMICOLON   = ";"
-	COMMA       = ","
-	LEFT_PAREN  = "("
-	RIGHT_PAREN = ")"
-	LEFT_BRACE  = "{"
-	RIGHT_BRACE = "}"
+	SEMICOLON     = ";"
+	COMMA         = ","
+	LEFT_PAREN    = "("
+	RIGHT_PAREN   = ")"
+	LEFT_BRACE    = "{"
+	RIGHT_BRACE   = "}"
+	LEFT_BRACKET  = "["
+	RIGHT_BRACKET = "]"
 
 	// keywords
 	FUNC   = "FUNCTION"
