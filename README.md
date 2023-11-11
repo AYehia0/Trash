@@ -5,6 +5,18 @@ In this project, we're going to write our own interpreter for our own programmin
 
 Notes: The aim of the project is to learn, not going to have the performance of a fully-fledged interpreter, nor the best features.
 
+## Progress
+
+A Demo of some of the features I have implemented so far.
+- Numbers: `let x = 20`
+- Lists: `let x = [69, 420]`
+- Strings: `let x = "Hello, darkness my old friend"`
+- Functions, closures, First-class and Higher-order functions : `let x = fn(a, b) { a + b }`
+- Some built-in functions (for now, not many): `len, exit`
+- Assignments: `x = 10; arr[0] = 20`
+
+<img title="Demo of trash" alt="Alt text" src=".assets/trash.gif">
+
 ## Tree-Walking interpreter
 An interpreter that parse the source code, build an abstract syntx tree (AST) out of it and then evaluate the tree.
 
@@ -20,7 +32,7 @@ The features of The Monkey Programming Language:
 - integers and booleans
 - arithmetic expressions
 - built-in functions
-- frst-class and higher-order functions
+- first-class and higher-order functions
 - closures
 - data sturctures : [strings, arrays, hash data]
 
@@ -67,53 +79,53 @@ defnition of `ast.ReturnStatement` really simple.
 
 #### Parsing Expressions
 
-- [ ] Expressions involving prefx operators:
-```
+- [X] Expressions involving prefx operators:
+```js
     -5
     !true
     !false
 ```
-- [ ] And of course it has infx operators (or “binary operators”):
-```
+- [X] And of course it has infx operators (or “binary operators”):
+```js
     5 + 5
     5 - 5
     5 / 5
     5 * 5
 ```
-- [ ] Besides these basic arithmetic operators, there are also the following comparison operators:
-```
+- [X] Besides these basic arithmetic operators, there are also the following comparison operators:
+```js
     foo == bar
     foo != bar
     foo < bar
     foo > bar
 ```
-- [ ] And of course, we can use parentheses to group expressions and inﬂuence the order of evaluation:
-```
+- [X] And of course, we can use parentheses to group expressions and inﬂuence the order of evaluation:
+```js
     5 * (5 + 5)
     ((5 + 5) * 5) * 5
 ```
-- [ ] Then there are call expressions:
-```
+- [X] Then there are call expressions:
+```js
     add(2, 3)
     add(add(2, 3), add(5, 10))
     max(5, add(5, (5 * 5)))
 ```
-- [ ] Identifers are expressions too:
-```
+- [X] Identifers are expressions too:
+```js
     foo * bar / foobar
     add(foo, bar)
 ```
-- [ ] Function literals are expressions too. We can use a let statement to bind a function to a name. The function literal is just the expression in the statement:
-```
+- [X] Function literals are expressions too. We can use a let statement to bind a function to a name. The function literal is just the expression in the statement:
+```js
     let add = fn(x, y) { return x + y };
 ```
-- [ ] And here we use a function literal in place of an identifer:
+- [X] And here we use a function literal in place of an identifer:
 
-```
+```js
 fn(x, y) { return x + y }(5, 5)
 (fn(x) { return x }(5) + 10 ) * 10
 ```
-- [ ] In contrast to a lot of widely used programming languages we also have “if expressions”:
+- [X] In contrast to a lot of widely used programming languages we also have “if expressions”:
 ```
 let result = if (10 > 5) { true } else { false };
 result // => true
