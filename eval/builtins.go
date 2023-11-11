@@ -4,6 +4,7 @@ Instead of attaching the builtins to the environment store, it's better to have 
 package eval
 
 import (
+	"fmt"
 	"os"
 	"trash/object"
 )
@@ -42,6 +43,14 @@ var builtins = map[string]*object.Builtin{
 			}
 
 			os.Exit(statusCode)
+			return NULL
+		},
+	},
+	"print": {
+		Func: func(args ...object.Object) object.Object {
+			for _, arg := range args {
+				fmt.Println(arg.Inspect())
+			}
 			return NULL
 		},
 	},
