@@ -261,8 +261,8 @@ func evalStringConcat(left object.Object, op string, right object.Object) object
 	leftVal := left.(*object.String).Value
 	rightVal := right.(*object.String).Value
 
-	if op != token.CONCAT {
-		return newErr("Unknown concat operator: '%s', use %s", op, token.CONCAT)
+	if op != token.PLUS {
+		return newErr("Unknown concat operator: '%s', use %s", op, token.COLON)
 	}
 
 	return &object.String{Value: leftVal + rightVal}
