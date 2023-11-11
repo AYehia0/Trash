@@ -309,6 +309,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len("Hello")`, 5},
 		{`len("")`, 0},
 		{`len("Hello, world")`, 12},
+		{`len([2,3,4])`, 3},
 		{`len(12)`, `Builtin "len" doesn't take INT args`},
 		{`len("1", "2")`, `Builtin "len": wrong number of args. got=2, expected=1`},
 		{`len()`, `Builtin "len": wrong number of args. got=0, expected=1`},

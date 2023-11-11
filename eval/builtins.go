@@ -18,6 +18,8 @@ var builtins = map[string]*object.Builtin{
 			switch arg := args[0].(type) {
 			case *object.String:
 				return &object.Int{Value: int64(len(arg.Value))}
+			case *object.List:
+				return &object.Int{Value: int64(len(arg.Values))}
 			default:
 				return newErr(`Builtin "len" doesn't take %s args`, arg.Type())
 			}
