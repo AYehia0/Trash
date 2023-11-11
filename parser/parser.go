@@ -45,7 +45,6 @@ var precedences = map[token.TokenType]int{
 	token.NOT_EQUAL:    EQUALS,
 	token.GT:           LESSGREATER,
 	token.LT:           LESSGREATER,
-	token.CONCAT:       SUM,
 	token.PLUS:         SUM,
 	token.NEG:          SUM,
 	token.LEFT_PAREN:   CALL,
@@ -79,10 +78,11 @@ func New(lexer *lexer.Lexer) *Parser {
 	p.registerPrefix(token.TRUE, p.parseBooleanExpression)
 	p.registerPrefix(token.FALSE, p.parseBooleanExpression)
 	p.registerPrefix(token.LEFT_BRACKET, p.parseListLiteral)
+	p.registerPrefix(token.LEFT_BRACE, p.parseHashLiteral)
 
 	// infix
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
-	p.registerInfix(token.CONCAT, p.parseInfixExpression)
+	p.registerInfix(token.COLON, p.parseInfixExpression)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.NEG, p.parseInfixExpression)
 	p.registerInfix(token.MUL, p.parseInfixExpression)
@@ -554,4 +554,35 @@ func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 
 	exp.Arguments = p.parseListExpression(token.RIGHT_PAREN)
 	return exp
+}
+
+func (p *Parser) parseHashLiteral() ast.Expression {
+	m := &ast.HashLiteral{
+		Token: p.currToken,
+	}
+	m.Store = map[ast.Expression]ast.Expression{}
+
+	for !p.TokenIs(p.peekToken, token.RIGHT_BRACE) {
+		p.nextToken()
+
+		key := p.parseExpression(LOWEST)
+
+		// TODO: change this
+		if !p.expectNextToken(token.COLON) {
+			return nil
+		}
+		p.nextToken()
+
+		value := p.parseExpression(LOWEST)
+
+		m.Store[key] = value
+
+		if !p.TokenIs(p.peekToken, token.RIGHT_BRACE) && !p.expectNextToken(token.COMMA) {
+			return nil
+		}
+	}
+	if !p.expectNextToken(token.RIGHT_BRACE) {
+		return nil
+	}
+	return m
 }

@@ -190,6 +190,26 @@ func (ind *IndexExpression) String() string {
 	return out.String()
 }
 
+// Hash expression : {<expression>:<expression>}
+type HashLiteral struct {
+	Token token.Token // first {
+	Store map[Expression]Expression
+}
+
+func (hl *HashLiteral) expressionNode()      {}
+func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
+func (hl *HashLiteral) String() string {
+	var out bytes.Buffer
+	pairs := []string{}
+	for key, value := range hl.Store {
+		pairs = append(pairs, key.String()+":"+value.String())
+	}
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+	return out.String()
+}
+
 type PrefixExpression struct {
 	Token    token.Token
 	Operator string // one those in the lexer definations

@@ -137,7 +137,7 @@ func (l *Lexer) NextToken() token.Token {
 	case '+':
 		t = newToken(token.PLUS, l.ch)
 	case ':':
-		t = newToken(token.CONCAT, l.ch)
+		t = newToken(token.COLON, l.ch)
 	case '-':
 		t = newToken(token.NEG, l.ch)
 	case '*':

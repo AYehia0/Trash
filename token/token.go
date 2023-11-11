@@ -13,7 +13,7 @@ const (
 	// operators: +, *, /, -
 	ASSIGN    = "="
 	PLUS      = "+"
-	CONCAT    = ":"
+	COLON     = ":"
 	NEG       = "-"
 	MUL       = "*"
 	DIV       = "/"
