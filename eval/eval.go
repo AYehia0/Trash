@@ -63,6 +63,8 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 		}
 		return &object.List{Values: values}
 
+	case *ast.HashLiteral:
+		return evalHashLiteral(node, env)
 	// we have to evaluate both the left and right (index) before we return the actual index
 	case *ast.IndexExpression:
 		left := Eval(node.Left, env)
@@ -78,7 +80,7 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 
 		value := Eval(node.Value, env)
 		if isErr(value) {
-			return index
+			return value
 		}
 
 		// calcs the whole expression after subsituting the index in the expression
@@ -150,11 +152,25 @@ func evalIndexExpression(left, index, value object.Object) object.Object {
 	switch {
 	case left.Type() == object.LIST_OBJ && index.Type() == object.INT_OBJ:
 		return evalListIndexExpression(left, index)
+	case left.Type() == object.HASHMAP_OBJ:
+		return evalHashIndexExpression(left, index)
 	default:
 		return newErr("Index operator not supported: %s", left.Type())
 	}
 }
 
+func evalHashIndexExpression(hash, index object.Object) object.Object {
+	hashObject := hash.(*object.Hashmap)
+	key, ok := index.(object.Hashable)
+	if !ok {
+		return newErr("Unusable as hashkey: %s", index.Type())
+	}
+	pair, ok := hashObject.Store[key.HashKey()]
+	if !ok {
+		return NULL
+	}
+	return pair.Value
+}
 func evalListIndexExpression(list, index object.Object) object.Object {
 	listObj := list.(*object.List)
 	idx := index.(*object.Int).Value
@@ -266,6 +282,27 @@ func evalStringConcat(left object.Object, op string, right object.Object) object
 	}
 
 	return &object.String{Value: leftVal + rightVal}
+}
+
+func evalHashLiteral(node *ast.HashLiteral, env *object.Env) object.Object {
+	pairs := make(map[object.HashKey]object.HashPair)
+	for keyNode, valueNode := range node.Store {
+		key := Eval(keyNode, env)
+		if isErr(key) {
+			return key
+		}
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return newErr("Unusable as hashkey: %s", key.Type())
+		}
+		value := Eval(valueNode, env)
+		if isErr(value) {
+			return value
+		}
+		hashed := hashKey.HashKey()
+		pairs[hashed] = object.HashPair{Key: key, Value: value}
+	}
+	return &object.Hashmap{Store: pairs}
 }
 
 func evalIntInfixExpression(left object.Object, op string, right object.Object) object.Object {

@@ -4,7 +4,7 @@ an easy way to evaluate the parsed code! : JIT (Just In Time) Evaluation! not th
 
 let a = 9;
 ...
-a = a + 5; <-- We need to bind the int a to value "9" and when we come cross a we've to fetch its value from the memory, but we've to get the value 9 as a is represented as *ast.IntegarLiteral.
+a = a + 5; <-- We need to bind the int a to value "9" and when we come cross a we've to fetch its value from the memory, but we've to get the value 9 as a is represented as *ast.IntegerLiteral.
 
 The point is this: there are a lot of diﬀerent ways to represent values of the interpreted languages in the host language.
 
@@ -17,6 +17,7 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"hash/fnv"
 	"strings"
 	"trash/ast"
 )
@@ -56,6 +57,68 @@ type List struct {
 	Values []Object // list can contain anything lol, JS are you happy now ?
 }
 
+// why hashing the key you may ask ?
+/*
+	key1 := &object.String{Value: "name"}
+	value := &object.String{Value: "key"}
+
+	pairs := map[object.Object]object.Object{}
+
+	pairs[key1] = value
+	fmt.Printf("pairs[key1]=%+v\n", pairs[key1])
+	// => pairs[key1]=&{Value:value}
+
+	key2 := &object.String{Value: "name"}
+	fmt.Printf("pairs[key2]=%+v\n", pairs[key2])
+	// => pairs[key2]=<nil>
+
+	fmt.Printf("(key1 == key2)=%t\n", key1 == key2)
+	// => (key1 == key2)=false
+
+Hasing keys : Strings, Booleans, Integers
+requirements: hashing the key must be unique, no two keys should have equal hashes.
+*/
+
+type HashKey struct {
+	Type  ObjectType
+	Value uint64
+}
+
+// used in the eval to check if the object is a usable as Hashkey when evaluating hash literals or indexing keys in hashmap.
+type Hashable interface {
+	HashKey() HashKey // TODO: Performance - Cache the return values
+}
+
+func (b *Bool) HashKey() HashKey {
+	var value uint64
+	if b.Value {
+		value = 1
+	} else {
+		value = 0
+	}
+	return HashKey{Type: b.Type(), Value: value}
+}
+
+func (s *String) HashKey() HashKey {
+	hash := fnv.New64a()
+	hash.Write([]byte(s.Value))
+
+	return HashKey{Type: s.Type(), Value: hash.Sum64()}
+}
+
+func (i *Int) HashKey() HashKey {
+	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}
+
+type HashPair struct {
+	Key   Object
+	Value Object
+}
+
+type Hashmap struct {
+	Store map[HashKey]HashPair // to be able to print the key and value when Inspect(), also if later implementing something like iter (range)
+}
+
 const (
 	INT_OBJ     = "INT"
 	STR_OBJ     = "STRING"
@@ -66,7 +129,25 @@ const (
 	FUNC_OBJ    = "FUNCTION"
 	BUILTIN_OBJ = "BUILTIN"
 	LIST_OBJ    = "LIST"
+	HASHMAP_OBJ = "HASH"
 )
+
+// --- Hashmap
+func (hm *Hashmap) Type() ObjectType {
+	return HASHMAP_OBJ
+}
+func (hm *Hashmap) Inspect() string {
+	var out bytes.Buffer
+	pairs := []string{}
+	for _, pair := range hm.Store {
+		pairs = append(pairs, fmt.Sprintf("%s: %s",
+			pair.Key.Inspect(), pair.Value.Inspect()))
+	}
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+	return out.String()
+}
 
 // --- List
 func (ls *List) Type() ObjectType {
@@ -92,7 +173,7 @@ func (fn *Builtin) Type() ObjectType {
 	return BUILTIN_OBJ
 }
 
-// --- Integar
+// --- Integer
 func (i *Int) Inspect() string {
 	return fmt.Sprintf("%d", i.Value)
 }
