@@ -76,8 +76,13 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 			return index
 		}
 
+		value := Eval(node.Value, env)
+		if isErr(value) {
+			return index
+		}
+
 		// calcs the whole expression after subsituting the index in the expression
-		return evalIndexExpression(left, index)
+		return evalIndexExpression(left, index, value)
 
 	case *ast.Boolean:
 		return mapBool(node.Value)
@@ -141,7 +146,7 @@ func evalExpressions(exps []ast.Expression, env *object.Env) []object.Object {
 	return result
 }
 
-func evalIndexExpression(left, index object.Object) object.Object {
+func evalIndexExpression(left, index, value object.Object) object.Object {
 	switch {
 	case left.Type() == object.LIST_OBJ && index.Type() == object.INT_OBJ:
 		return evalListIndexExpression(left, index)

@@ -171,6 +171,7 @@ type IndexExpression struct {
 	Token token.Token // first [
 	Left  Expression
 	Index Expression // the right side inside the []
+	Value Expression // the value of the assignment
 }
 
 func (ind *IndexExpression) expressionNode()      {}
@@ -182,6 +183,10 @@ func (ind *IndexExpression) String() string {
 	out.WriteString("[")
 	out.WriteString(ind.Index.String())
 	out.WriteString("])")
+	if ind.Value != nil {
+		out.WriteString("=")
+		out.WriteString(ind.Value.String())
+	}
 	return out.String()
 }
 

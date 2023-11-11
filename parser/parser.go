@@ -370,6 +370,13 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 		return nil
 	}
 
+	if p.TokenIs(p.peekToken, token.ASSIGN) {
+		p.nextToken()
+		p.nextToken()
+
+		ind.Value = p.parseExpression(LOWEST)
+	}
+
 	return ind
 }
 
