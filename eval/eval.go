@@ -151,19 +151,24 @@ func evalExpressions(exps []ast.Expression, env *object.Env) []object.Object {
 func evalIndexExpression(left, index, value object.Object) object.Object {
 	switch {
 	case left.Type() == object.LIST_OBJ && index.Type() == object.INT_OBJ:
-		return evalListIndexExpression(left, index)
+		return evalListIndexExpression(left, index, value)
 	case left.Type() == object.HASHMAP_OBJ:
-		return evalHashIndexExpression(left, index)
+		return evalHashIndexExpression(left, index, value)
 	default:
 		return newErr("Index operator not supported: %s", left.Type())
 	}
 }
 
-func evalHashIndexExpression(hash, index object.Object) object.Object {
+func evalHashIndexExpression(hash, index, value object.Object) object.Object {
 	hashObject := hash.(*object.Hashmap)
 	key, ok := index.(object.Hashable)
 	if !ok {
 		return newErr("Unusable as hashkey: %s", index.Type())
+	}
+
+	if value != nil {
+		hashObject.Store[key.HashKey()] = object.HashPair{Key: index, Value: value}
+		return value
 	}
 	pair, ok := hashObject.Store[key.HashKey()]
 	if !ok {
@@ -171,7 +176,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 	}
 	return pair.Value
 }
-func evalListIndexExpression(list, index object.Object) object.Object {
+func evalListIndexExpression(list, index, value object.Object) object.Object {
 	listObj := list.(*object.List)
 	idx := index.(*object.Int).Value
 	maxLen := int64(len(listObj.Values) - 1)
@@ -179,6 +184,10 @@ func evalListIndexExpression(list, index object.Object) object.Object {
 	if idx < 0 || idx > maxLen {
 		return NULL
 	}
+	if value != nil {
+		listObj.Values[idx] = value
+	}
+
 	return listObj.Values[idx]
 }
 func getObjectFunction(function object.Object, args []object.Object) object.Object {
