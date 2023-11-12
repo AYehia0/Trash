@@ -1,0 +1,21 @@
+let sayHello = fn(str) {
+    return "Hello, " + str
+}
+
+let arr = [1, 2, 3, "A String message", sayHello("world, "), {"id": 2024, "pos": "here"}]
+
+let x = 2
+
+if (arr[x] == 2) {
+    arr[x] = arr[x] * 100
+} else {
+    arr[x] = 0
+}
+
+let map = {
+    arr[0]: fn (a, b)  {
+        a + b
+    }
+}
+
+print(map[1](2, 5))
