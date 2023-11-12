@@ -130,3 +130,11 @@ fn(x, y) { return x + y }(5, 5)
 let result = if (10 > 5) { true } else { false };
 result // => true
 ```
+
+## Todo
+
+- [X] Read input from a file.
+- [ ] Don't parse Comments : `# This is a comment`
+- [ ] Add loops : `for (let x = 0; i < 3; x++) {}`
+- [ ] Add list built-in functions like: `push, pop, delete, ...`
+- [ ] Implement simple syntax highlighter.
